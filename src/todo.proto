@@ -5,7 +5,9 @@ option go_package = "./todo";
 
 message TaskMessage {
 	string title = 1;
-	int32 deadline = 2;
+	string description = 2;
+	int64 createdAt = 3;
+	int64 deadline = 4;
 }
 
 message TasksListMessage {

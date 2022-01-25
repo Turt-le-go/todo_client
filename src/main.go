@@ -18,7 +18,7 @@ const(
 	connPort int = 8080
 	connHost string = "localhost"
 
-	timeLayout string = "02.01 15:04"
+	timeLayout string = "02.01.06"
 )
 
 var reader = bufio.NewReader(os.Stdin)
@@ -46,6 +46,8 @@ func commandLoop(c todo.ToDoServiceClient){
 		case "q":
 			fmt.Println("Bye.")
 			return
+		default:
+			fmt.Println("Wrong command.")
 		}
 	}
 }
@@ -58,6 +60,7 @@ func getInput(prompt string) string {
 
 func addTask(c todo.ToDoServiceClient){
 	title := getInput("Task title: ")
+	description := getInput("Task description: ")
 	timeString := getInput("Deadline: ")
 	deadline, err := parseTime(timeString)
 	if err != nil {
@@ -74,27 +77,31 @@ func addTask(c todo.ToDoServiceClient){
 	}
 	task := todo.TaskMessage{
 		Title: title,
+		Description: description,
 		Deadline: deadline,
+		CreatedAt: time.Now().Unix(),
 	}
 	res, err := c.AddTask(context.Background(), &task)
 	utils.Check(err)
 	fmt.Println(res.Text)
 }
 
-func parseTime(timeString string) (int32, error) {
+func parseTime(timeString string) (int64, error) {
 	t, err := time.Parse(timeLayout, timeString)
-	t = t.In(time.Now().Location())
-	return int32(t.Unix()), err
+	return t.Unix(), err
 }
 
 func printAllTasks(c todo.ToDoServiceClient) {
 	tasksList, err := c.ListTasks(context.Background(), &todo.Empty{})
 	utils.Check(err)
+	terminalWigth,_ := utils.GetSize()
+	delimiter := strings.Repeat("#", terminalWigth)
+	fmt.Println(delimiter)
 	for _,task := range tasksList.List {
-		fmt.Printf(
-			"Title: %v, deadline: %v\n",
-			task.Title,
-			time.Unix(int64(task.Deadline), 0).Format(timeLayout),
-		)
+		fmt.Printf("Title: %v\n", task.Title)
+		fmt.Printf("Description: %v\n", task.Description)
+		fmt.Printf("CreatedAt: %v\n", time.Unix(int64(task.CreatedAt), 0).Format(timeLayout))
+		fmt.Printf("Deadline: %v\n", time.Unix(int64(task.Deadline), 0).Format(timeLayout))
+		fmt.Println(delimiter)
 	}
 }
