@@ -1,0 +1,22 @@
+syntax = "proto3";
+package todo;
+
+option go_package = "./todo";
+
+message TaskMessage {
+	string title = 1;
+	int32 deadline = 2;
+}
+
+message TasksListMessage {
+	repeated TaskMessage list = 1;
+}
+message ReplyMessage {
+	string text = 1;
+}
+message Empty {}
+
+service ToDoService {
+	rpc AddTask(TaskMessage) returns (ReplyMessage) {}
+	rpc ListTasks(Empty) returns (TasksListMessage) {}
+}
